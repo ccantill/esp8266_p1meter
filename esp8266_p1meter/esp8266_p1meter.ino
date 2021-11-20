@@ -154,6 +154,8 @@ void send_data_to_broker()
     send_metric("long_power_outages", LONG_POWER_OUTAGES);
     send_metric("short_power_drops", SHORT_POWER_DROPS);
     send_metric("short_power_peaks", SHORT_POWER_PEAKS);
+
+    send_metric("water_usage", WATER_PULSE_COUNTER * WATER_PULSE_SCALE);
 }
 
 // **********************************
@@ -270,28 +272,28 @@ bool decode_telegram(int len)
 
     // 1-0:1.8.1(000992.992*kWh)
     // 1-0:1.8.1 = Elektra verbruik laag tarief (DSMR v4.0)
-    if (strncmp(telegram, "1-0:1.8.1", strlen("1-0:1.8.1")) == 0)
+  if (strncmp(telegram, "1-0:1.8.2", strlen("1-0:1.8.1")) == 0)
     {
         CONSUMPTION_LOW_TARIF = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:1.8.2(000560.157*kWh)
     // 1-0:1.8.2 = Elektra verbruik hoog tarief (DSMR v4.0)
-    if (strncmp(telegram, "1-0:1.8.2", strlen("1-0:1.8.2")) == 0)
+  if (strncmp(telegram, "1-0:1.8.1", strlen("1-0:1.8.2")) == 0)
     {
         CONSUMPTION_HIGH_TARIF = getValue(telegram, len, '(', '*');
     }
 	
     // 1-0:2.8.1(000560.157*kWh)
     // 1-0:2.8.1 = Elektra teruglevering laag tarief (DSMR v4.0)
-    if (strncmp(telegram, "1-0:2.8.1", strlen("1-0:2.8.1")) == 0)
+  if (strncmp(telegram, "1-0:2.8.2", strlen("1-0:2.8.1")) == 0)
     {
         RETURNDELIVERY_LOW_TARIF = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:2.8.2(000560.157*kWh)
     // 1-0:2.8.2 = Elektra teruglevering hoog tarief (DSMR v4.0)
-    if (strncmp(telegram, "1-0:2.8.2", strlen("1-0:2.8.2")) == 0)
+    if (strncmp(telegram, "1-0:2.8.1", strlen("1-0:2.8.2")) == 0)
     {
         RETURNDELIVERY_HIGH_TARIF = getValue(telegram, len, '(', '*');
     }
@@ -370,7 +372,7 @@ bool decode_telegram(int len)
 
     // 0-1:24.2.1(150531200000S)(00811.923*m3)
     // 0-1:24.2.1 = Gas (DSMR v4.0) on Kaifa MA105 meter
-    if (strncmp(telegram, "0-1:24.2.1", strlen("0-1:24.2.1")) == 0)
+    if (strncmp(telegram, "0-1:24.2.3", strlen("0-1:24.2.1")) == 0)
     {
         GAS_METER_M3 = getValue(telegram, len, '(', '*');
     }
@@ -552,6 +554,27 @@ void setup_mdns()
 }
 
 // **********************************
+// * Setup water counter interrupt  *
+// **********************************
+
+ICACHE_RAM_ATTR void waterHandleInterrupt() {
+  long m = millis();
+  if(m < WATER_PULSE_LAST_MILLIS || m > WATER_PULSE_LAST_MILLIS + WATER_PULSE_DEBOUNCE) {
+    if(WATER_PULSE_COUNTER >= INT_MAX / WATER_PULSE_SCALE) {
+      WATER_PULSE_COUNTER = 0;
+    }
+    WATER_PULSE_COUNTER++;
+    Serial.printf("Water counter: %d\n", WATER_PULSE_COUNTER);
+    WATER_PULSE_LAST_MILLIS = millis();
+  }
+}
+
+void setupWaterCounter() {
+  pinMode(WATER_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(WATER_PIN), waterHandleInterrupt, FALLING);
+}
+
+// **********************************
 // * Setup Main                     *
 // **********************************
 
@@ -660,6 +683,8 @@ void setup()
     Serial.printf("MQTT connecting to: %s:%s\n", MQTT_HOST, MQTT_PORT);
 
     mqtt_client.setServer(MQTT_HOST, atoi(MQTT_PORT));
+
+  setupWaterCounter();
 
 }
 

@@ -1,117 +1,91 @@
 # Sensors for esp8266_p1meter to be used in Home Assistant
 
-- platform: mqtt
-  name: P1 Consumption Low Tariff
-  unit_of_measurement: 'kWh'
-  state_topic: "sensors/power/p1meter/consumption_low_tarif"
-  value_template: "{{ value|float / 1000 }}"
+sensor:
+  - platform: mqtt
+    name: energy_delivered_tariff2
+    unit_of_measurement: 'kWh'
+    state_topic: "sensors/power/p1meter/consumption_low_tarif"
+    value_template: "{{ value|float / 1000 }}"
 
-- platform: mqtt
-  name: P1 Consumption High Tariff
-  unit_of_measurement: 'kWh'
-  state_topic: "sensors/power/p1meter/consumption_high_tarif"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: energy_delivered_tariff1
+    unit_of_measurement: 'kWh'
+    state_topic: "sensors/power/p1meter/consumption_high_tarif"
+    value_template: "{{ value|float / 1000 }}"
 
-- platform: mqtt
-  name: P1 Return Delivery High Tariff
-  unit_of_measurement: 'kWh'
-  state_topic: "sensors/power/p1meter/returndelivery_high_tarif"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: power_delivered
+    unit_of_measurement: 'kW'
+    state_topic: "sensors/power/p1meter/actual_consumption"
+    value_template: "{{ value|float / 1000 }}"
+    device_class: energy
 
-- platform: mqtt
-  name: P1 Return Delivery Low Tariff
-  unit_of_measurement: 'kWh'
-  state_topic: "sensors/power/p1meter/returndelivery_low_tarif"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: power_l1
+    unit_of_measurement: 'kW'
+    state_topic: "sensors/power/p1meter/l1_instant_power_usage"
+    value_template: "{{ value|float / 1000 }}"
+    device_class: energy
 
-- platform: mqtt
-  name: P1 Actual Power Consumption
-  unit_of_measurement: 'kW'
-  state_topic: "sensors/power/p1meter/actual_consumption"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: current_delivered_l1
+    unit_of_measurement: 'A'
+    state_topic: "sensors/power/p1meter/l1_instant_power_current"
+    value_template: "{{ value|float / 1000 }}"
+    device_class: current
 
-- platform: mqtt
-  name: P1 Actual Return Delivery
-  unit_of_measurement: 'kW'
-  state_topic: "sensors/power/p1meter/actual_returndelivery"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: voltage_l1
+    unit_of_measurement: 'V'
+    state_topic: "sensors/power/p1meter/l1_voltage"
+    value_template: "{{ value|float / 1000 }}"
+    device_class: voltage
 
-- platform: mqtt
-  name: P1 L1 Instant Power Usage
-  unit_of_measurement: 'kW'
-  state_topic: "sensors/power/p1meter/l1_instant_power_usage"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: gas_delivered
+    unit_of_measurement: 'm³'
+    state_topic: "sensors/power/p1meter/gas_meter_m3"
+    value_template: "{{ value|float / 1000 }}"
+    device_class: 'gas'
+    state_class: 'total_increasing'
 
-- platform: mqtt
-  name: P1 L2 Instant Power Usage
-  unit_of_measurement: 'kW'
-  state_topic: "sensors/power/p1meter/l2_instant_power_usage"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: P1 Actual Tariff Group
+    state_topic: "sensors/power/p1meter/actual_tarif_group"
 
-- platform: mqtt
-  name: P1 L3 Instant Power Usage
-  unit_of_measurement: 'kW'
-  state_topic: "sensors/power/p1meter/l3_instant_power_usage"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: electricity_failures
+    state_topic: "sensors/power/p1meter/short_power_outages"
 
-- platform: mqtt
-  name: P1 L1 Instant Power Current
-  unit_of_measurement: 'A'
-  state_topic: "sensors/power/p1meter/l1_instant_power_current"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: electricity_long_failures
+    state_topic: "sensors/power/p1meter/long_power_outages"
 
-- platform: mqtt
-  name: P1 L2 Instant Power Current
-  unit_of_measurement: 'A'
-  state_topic: "sensors/power/p1meter/l2_instant_power_current"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: P1 Short Power Drops
+    state_topic: "sensors/power/p1meter/short_power_drops"
 
-- platform: mqtt
-  name: P1 L3 Instant Power Current
-  unit_of_measurement: 'A'
-  state_topic: "sensors/power/p1meter/l3_instant_power_current"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: P1 Short Power Peaks
+    state_topic: "sensors/power/p1meter/short_power_peaks"
 
-- platform: mqtt
-  name: P1 L1 Voltage
-  unit_of_measurement: 'V'   
-  state_topic: "sensors/power/p1meter/l1_voltage"
-  value_template: "{{ value|float / 1000 }}"
+  - platform: mqtt
+    name: water_usage
+    state_topic: "sensors/power/p1meter/water_usage"
+    value_template: "{{ value|float / 1000 }}"
+    state_class: 'total_increasing'
+    unit_of_measurement: 'L'
 
-- platform: mqtt
-  name: P1 L2 Voltage
-  unit_of_measurement: 'V'   
-  state_topic: "sensors/power/p1meter/l2_voltage"
-  value_template: "{{ value|float / 1000 }}"
-
-- platform: mqtt
-  name: P1 L3 Voltage
-  unit_of_measurement: 'V'   
-  state_topic: "sensors/power/p1meter/l3_voltage"
-  value_template: "{{ value|float / 1000 }}"
-
-- platform: mqtt
-  name: P1 Gas Usage
-  unit_of_measurement: 'm3'
-  state_topic: "sensors/power/p1meter/gas_meter_m3"
-  value_template: "{{ value|float / 1000 }}"
-
-- platform: mqtt
-  name: P1 Actual Tariff Group
-  state_topic: "sensors/power/p1meter/actual_tarif_group"
-
-- platform: mqtt
-  name: P1 Short Power Outages
-  state_topic: "sensors/power/p1meter/short_power_outages"
-
-- platform: mqtt
-  name: P1 Long Power Outages
-  state_topic: "sensors/power/p1meter/long_power_outages"
-
-- platform: mqtt
-  name: P1 Short Power Drops
-  state_topic: "sensors/power/p1meter/short_power_drops"
-
-- platform: mqtt
-  name: P1 Short Power Peaks
-  state_topic: "sensors/power/p1meter/short_power_peaks"
+utility_meter:
+  water_daily:
+    source: sensor.water_usage
+    name: Daily Water Usage
+    cycle: daily
+  water_weekly:
+    source: sensor.water_usage
+    name: Weekly Water Usage
+    cycle: weekly
+  water_monthly:
+    source: sensor.water_usage
+    name: Monthly Water Usage
+    cycle: monthly

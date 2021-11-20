@@ -3,7 +3,8 @@
 // **********************************
 
 // Update treshold in milliseconds, messages will only be sent on this interval
-#define UPDATE_INTERVAL 60000  // 1 minute
+#define UPDATE_INTERVAL 500  // .5 seconds
+//#define UPDATE_INTERVAL 60000  // 1 minute
 //#define UPDATE_INTERVAL 300000 // 5 minutes
 
 // * Baud rate for both hardware and software 
@@ -31,6 +32,11 @@
 
 // * MQTT root topic
 #define MQTT_ROOT_TOPIC "sensors/power/p1meter"
+
+// * Water meter configuration
+#define WATER_PIN 5
+#define WATER_PULSE_SCALE 500
+#define WATER_PULSE_DEBOUNCE 200
 
 // * MQTT Last reconnection counter
 long LAST_RECONNECT_ATTEMPT = 0;
@@ -73,6 +79,11 @@ long SHORT_POWER_OUTAGES;
 long LONG_POWER_OUTAGES;
 long SHORT_POWER_DROPS;
 long SHORT_POWER_PEAKS;
+
+// Water
+
+long WATER_PULSE_COUNTER = 0;
+long WATER_PULSE_LAST_MILLIS;
 
 // * Set during CRC checking
 unsigned int currentCRC = 0;

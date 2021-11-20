@@ -64,6 +64,14 @@ When using a 6 pin cable you can use the power source provided by the meter.
 </p>
 </details>
 
+## Connecting the water meter
+Connect a reed switch between D1 and GND on the ESP8266 and insert it into the hole that runs along the left
+side of the water meter. The reed switch will open and close twice per liter of water usage. Because reed switches
+tend to bounce, pulses shorter than 200ms are ignored. That corresponds to a max water usage of 2.5 liter per second
+which should be enough for most households. This debounce limit can however be changed in `settings.h`.
+
+The value sent out over MQTT is in ml.
+
 ## Data Sent
 
 All metrics are send to their own MQTT topic.
@@ -91,6 +99,7 @@ sensors/power/p1meter/short_power_outages 3
 sensors/power/p1meter/long_power_outages 1
 sensors/power/p1meter/short_power_drops 0
 sensors/power/p1meter/short_power_peaks 0
+sensors/power/p1meter/water_usage 10500
 ```
 
 ## Home Assistant Configuration
