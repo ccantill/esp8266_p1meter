@@ -114,48 +114,51 @@ bool mqtt_reconnect()
     return true;
 }
 
-void send_metric(String name, long metric)
+void send_metric(String name, METERVALUE* metric)
 {
-    Serial.print(F("Sending metric to broker: "));
-    Serial.print(name);
-    Serial.print(F("="));
-    Serial.println(metric);
-
-    char output[10];
-    ltoa(metric, output, sizeof(output));
-
-    String topic = String(MQTT_ROOT_TOPIC) + "/" + name;
-    send_mqtt_message(topic.c_str(), output);
+    if(metric->currentValue != metric->previousValue) {
+      metric->previousValue = metric->currentValue;
+      Serial.print(F("Sending metric to broker: "));
+      Serial.print(name);
+      Serial.print(F("="));
+      Serial.println(metric->currentValue);
+  
+      char output[10];
+      ltoa(metric->currentValue, output, sizeof(output));
+  
+      String topic = String(MQTT_ROOT_TOPIC) + "/" + name;
+      send_mqtt_message(topic.c_str(), output);
+    }
 }
 
 void send_data_to_broker()
 {
-    send_metric("consumption_low_tarif", CONSUMPTION_LOW_TARIF);
-    send_metric("consumption_high_tarif", CONSUMPTION_HIGH_TARIF);
-    send_metric("returndelivery_low_tarif", RETURNDELIVERY_LOW_TARIF);
-    send_metric("returndelivery_high_tarif", RETURNDELIVERY_HIGH_TARIF);
-    send_metric("actual_consumption", ACTUAL_CONSUMPTION);
-    send_metric("actual_returndelivery", ACTUAL_RETURNDELIVERY);
+    send_metric("consumption_low_tarif", &CONSUMPTION_LOW_TARIF);
+    send_metric("consumption_high_tarif", &CONSUMPTION_HIGH_TARIF);
+    send_metric("returndelivery_low_tarif", &RETURNDELIVERY_LOW_TARIF);
+    send_metric("returndelivery_high_tarif", &RETURNDELIVERY_HIGH_TARIF);
+    send_metric("actual_consumption", &ACTUAL_CONSUMPTION);
+    send_metric("actual_returndelivery", &ACTUAL_RETURNDELIVERY);
 
-    send_metric("l1_instant_power_usage", L1_INSTANT_POWER_USAGE);
-    send_metric("l2_instant_power_usage", L2_INSTANT_POWER_USAGE);
-    send_metric("l3_instant_power_usage", L3_INSTANT_POWER_USAGE);
-    send_metric("l1_instant_power_current", L1_INSTANT_POWER_CURRENT);
-    send_metric("l2_instant_power_current", L2_INSTANT_POWER_CURRENT);
-    send_metric("l3_instant_power_current", L3_INSTANT_POWER_CURRENT);
-    send_metric("l1_voltage", L1_VOLTAGE);
-    send_metric("l2_voltage", L2_VOLTAGE);
-    send_metric("l3_voltage", L3_VOLTAGE);
+    send_metric("l1_instant_power_usage", &L1_INSTANT_POWER_USAGE);
+    send_metric("l2_instant_power_usage", &L2_INSTANT_POWER_USAGE);
+    send_metric("l3_instant_power_usage", &L3_INSTANT_POWER_USAGE);
+    send_metric("l1_instant_power_current", &L1_INSTANT_POWER_CURRENT);
+    send_metric("l2_instant_power_current", &L2_INSTANT_POWER_CURRENT);
+    send_metric("l3_instant_power_current", &L3_INSTANT_POWER_CURRENT);
+    send_metric("l1_voltage", &L1_VOLTAGE);
+    send_metric("l2_voltage", &L2_VOLTAGE);
+    send_metric("l3_voltage", &L3_VOLTAGE);
     
-    send_metric("gas_meter_m3", GAS_METER_M3);
+    send_metric("gas_meter_m3", &GAS_METER_M3);
 
-    send_metric("actual_tarif_group", ACTUAL_TARIF);
-    send_metric("short_power_outages", SHORT_POWER_OUTAGES);
-    send_metric("long_power_outages", LONG_POWER_OUTAGES);
-    send_metric("short_power_drops", SHORT_POWER_DROPS);
-    send_metric("short_power_peaks", SHORT_POWER_PEAKS);
+    send_metric("actual_tarif_group", &ACTUAL_TARIF);
+    send_metric("short_power_outages", &SHORT_POWER_OUTAGES);
+    send_metric("long_power_outages", &LONG_POWER_OUTAGES);
+    send_metric("short_power_drops", &SHORT_POWER_DROPS);
+    send_metric("short_power_peaks", &SHORT_POWER_PEAKS);
 
-    send_metric("water_usage", WATER_PULSE_COUNTER * WATER_PULSE_SCALE);
+    //send_metric("water_usage", WATER_PULSE_COUNTER * WATER_PULSE_SCALE);
 }
 
 // **********************************
@@ -274,142 +277,142 @@ bool decode_telegram(int len)
     // 1-0:1.8.1 = Elektra verbruik laag tarief (DSMR v4.0)
   if (strncmp(telegram, "1-0:1.8.2", strlen("1-0:1.8.1")) == 0)
     {
-        CONSUMPTION_LOW_TARIF = getValue(telegram, len, '(', '*');
+        CONSUMPTION_LOW_TARIF.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:1.8.2(000560.157*kWh)
     // 1-0:1.8.2 = Elektra verbruik hoog tarief (DSMR v4.0)
   if (strncmp(telegram, "1-0:1.8.1", strlen("1-0:1.8.2")) == 0)
     {
-        CONSUMPTION_HIGH_TARIF = getValue(telegram, len, '(', '*');
+        CONSUMPTION_HIGH_TARIF.currentValue = getValue(telegram, len, '(', '*');
     }
 	
     // 1-0:2.8.1(000560.157*kWh)
     // 1-0:2.8.1 = Elektra teruglevering laag tarief (DSMR v4.0)
   if (strncmp(telegram, "1-0:2.8.2", strlen("1-0:2.8.1")) == 0)
     {
-        RETURNDELIVERY_LOW_TARIF = getValue(telegram, len, '(', '*');
+        RETURNDELIVERY_LOW_TARIF.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:2.8.2(000560.157*kWh)
     // 1-0:2.8.2 = Elektra teruglevering hoog tarief (DSMR v4.0)
     if (strncmp(telegram, "1-0:2.8.1", strlen("1-0:2.8.2")) == 0)
     {
-        RETURNDELIVERY_HIGH_TARIF = getValue(telegram, len, '(', '*');
+        RETURNDELIVERY_HIGH_TARIF.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:1.7.0(00.424*kW) Actueel verbruik
     // 1-0:1.7.x = Electricity consumption actual usage (DSMR v4.0)
     if (strncmp(telegram, "1-0:1.7.0", strlen("1-0:1.7.0")) == 0)
     {
-        ACTUAL_CONSUMPTION = getValue(telegram, len, '(', '*');
+        ACTUAL_CONSUMPTION.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:2.7.0(00.000*kW) Actuele teruglevering (-P) in 1 Watt resolution
     if (strncmp(telegram, "1-0:2.7.0", strlen("1-0:2.7.0")) == 0)
     {
-        ACTUAL_RETURNDELIVERY = getValue(telegram, len, '(', '*');
+        ACTUAL_RETURNDELIVERY.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:21.7.0(00.378*kW)
     // 1-0:21.7.0 = Instantaan vermogen Elektriciteit levering L1
     if (strncmp(telegram, "1-0:21.7.0", strlen("1-0:21.7.0")) == 0)
     {
-        L1_INSTANT_POWER_USAGE = getValue(telegram, len, '(', '*');
+        L1_INSTANT_POWER_USAGE.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:41.7.0(00.378*kW)
     // 1-0:41.7.0 = Instantaan vermogen Elektriciteit levering L2
     if (strncmp(telegram, "1-0:41.7.0", strlen("1-0:41.7.0")) == 0)
     {
-        L2_INSTANT_POWER_USAGE = getValue(telegram, len, '(', '*');
+        L2_INSTANT_POWER_USAGE.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:61.7.0(00.378*kW)
     // 1-0:61.7.0 = Instantaan vermogen Elektriciteit levering L3
     if (strncmp(telegram, "1-0:61.7.0", strlen("1-0:61.7.0")) == 0)
     {
-        L3_INSTANT_POWER_USAGE = getValue(telegram, len, '(', '*');
+        L3_INSTANT_POWER_USAGE.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:31.7.0(002*A)
     // 1-0:31.7.0 = Instantane stroom Elektriciteit L1
     if (strncmp(telegram, "1-0:31.7.0", strlen("1-0:31.7.0")) == 0)
     {
-        L1_INSTANT_POWER_CURRENT = getValue(telegram, len, '(', '*');
+        L1_INSTANT_POWER_CURRENT.currentValue = getValue(telegram, len, '(', '*');
     }
     // 1-0:51.7.0(002*A)
     // 1-0:51.7.0 = Instantane stroom Elektriciteit L2
     if (strncmp(telegram, "1-0:51.7.0", strlen("1-0:51.7.0")) == 0)
     {
-        L2_INSTANT_POWER_CURRENT = getValue(telegram, len, '(', '*');
+        L2_INSTANT_POWER_CURRENT.currentValue = getValue(telegram, len, '(', '*');
     }
     // 1-0:71.7.0(002*A)
     // 1-0:71.7.0 = Instantane stroom Elektriciteit L3
     if (strncmp(telegram, "1-0:71.7.0", strlen("1-0:71.7.0")) == 0)
     {
-        L3_INSTANT_POWER_CURRENT = getValue(telegram, len, '(', '*');
+        L3_INSTANT_POWER_CURRENT.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 1-0:32.7.0(232.0*V)
     // 1-0:32.7.0 = Voltage L1
     if (strncmp(telegram, "1-0:32.7.0", strlen("1-0:32.7.0")) == 0)
     {
-        L1_VOLTAGE = getValue(telegram, len, '(', '*');
+        L1_VOLTAGE.currentValue = getValue(telegram, len, '(', '*');
     }
     // 1-0:52.7.0(232.0*V)
     // 1-0:52.7.0 = Voltage L2
     if (strncmp(telegram, "1-0:52.7.0", strlen("1-0:52.7.0")) == 0)
     {
-        L2_VOLTAGE = getValue(telegram, len, '(', '*');
+        L2_VOLTAGE.currentValue = getValue(telegram, len, '(', '*');
     }   
     // 1-0:72.7.0(232.0*V)
     // 1-0:72.7.0 = Voltage L3
     if (strncmp(telegram, "1-0:72.7.0", strlen("1-0:72.7.0")) == 0)
     {
-        L3_VOLTAGE = getValue(telegram, len, '(', '*');
+        L3_VOLTAGE.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 0-1:24.2.1(150531200000S)(00811.923*m3)
     // 0-1:24.2.1 = Gas (DSMR v4.0) on Kaifa MA105 meter
     if (strncmp(telegram, "0-1:24.2.3", strlen("0-1:24.2.1")) == 0)
     {
-        GAS_METER_M3 = getValue(telegram, len, '(', '*');
+        GAS_METER_M3.currentValue = getValue(telegram, len, '(', '*');
     }
 
     // 0-0:96.14.0(0001)
     // 0-0:96.14.0 = Actual Tarif
     if (strncmp(telegram, "0-0:96.14.0", strlen("0-0:96.14.0")) == 0)
     {
-        ACTUAL_TARIF = getValue(telegram, len, '(', ')');
+        ACTUAL_TARIF.currentValue = getValue(telegram, len, '(', ')');
     }
 
     // 0-0:96.7.21(00003)
     // 0-0:96.7.21 = Aantal onderbrekingen Elektriciteit
     if (strncmp(telegram, "0-0:96.7.21", strlen("0-0:96.7.21")) == 0)
     {
-        SHORT_POWER_OUTAGES = getValue(telegram, len, '(', ')');
+        SHORT_POWER_OUTAGES.currentValue = getValue(telegram, len, '(', ')');
     }
 
     // 0-0:96.7.9(00001)
     // 0-0:96.7.9 = Aantal lange onderbrekingen Elektriciteit
     if (strncmp(telegram, "0-0:96.7.9", strlen("0-0:96.7.9")) == 0)
     {
-        LONG_POWER_OUTAGES = getValue(telegram, len, '(', ')');
+        LONG_POWER_OUTAGES.currentValue = getValue(telegram, len, '(', ')');
     }
 
     // 1-0:32.32.0(00000)
     // 1-0:32.32.0 = Aantal korte spanningsdalingen Elektriciteit in fase 1
     if (strncmp(telegram, "1-0:32.32.0", strlen("1-0:32.32.0")) == 0)
     {
-        SHORT_POWER_DROPS = getValue(telegram, len, '(', ')');
+        SHORT_POWER_DROPS.currentValue = getValue(telegram, len, '(', ')');
     }
 
     // 1-0:32.36.0(00000)
     // 1-0:32.36.0 = Aantal korte spanningsstijgingen Elektriciteit in fase 1
     if (strncmp(telegram, "1-0:32.36.0", strlen("1-0:32.36.0")) == 0)
     {
-        SHORT_POWER_PEAKS = getValue(telegram, len, '(', ')');
+        SHORT_POWER_PEAKS.currentValue = getValue(telegram, len, '(', ')');
     }
 
     return validCRCFound;
@@ -557,22 +560,22 @@ void setup_mdns()
 // * Setup water counter interrupt  *
 // **********************************
 
-ICACHE_RAM_ATTR void waterHandleInterrupt() {
-  long m = millis();
-  if(m < WATER_PULSE_LAST_MILLIS || m > WATER_PULSE_LAST_MILLIS + WATER_PULSE_DEBOUNCE) {
-    if(WATER_PULSE_COUNTER >= INT_MAX / WATER_PULSE_SCALE) {
-      WATER_PULSE_COUNTER = 0;
-    }
-    WATER_PULSE_COUNTER++;
-    Serial.printf("Water counter: %d\n", WATER_PULSE_COUNTER);
-    WATER_PULSE_LAST_MILLIS = millis();
-  }
-}
-
-void setupWaterCounter() {
-  pinMode(WATER_PIN, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(WATER_PIN), waterHandleInterrupt, FALLING);
-}
+//ICACHE_RAM_ATTR void waterHandleInterrupt() {
+//  long m = millis();
+//  if(m < WATER_PULSE_LAST_MILLIS || m > WATER_PULSE_LAST_MILLIS + WATER_PULSE_DEBOUNCE) {
+//    if(WATER_PULSE_COUNTER >= INT_MAX / WATER_PULSE_SCALE) {
+//      WATER_PULSE_COUNTER = 0;
+//    }
+//    WATER_PULSE_COUNTER++;
+//    Serial.printf("Water counter: %d\n", WATER_PULSE_COUNTER);
+//    WATER_PULSE_LAST_MILLIS = millis();
+//  }
+//}
+//
+//void setupWaterCounter() {
+//  pinMode(WATER_PIN, INPUT_PULLUP);
+//  attachInterrupt(digitalPinToInterrupt(WATER_PIN), waterHandleInterrupt, FALLING);
+//}
 
 // **********************************
 // * Setup Main                     *
@@ -684,7 +687,7 @@ void setup()
 
     mqtt_client.setServer(MQTT_HOST, atoi(MQTT_PORT));
 
-  setupWaterCounter();
+//  setupWaterCounter();
 
 }
 
