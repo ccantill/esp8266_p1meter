@@ -61,7 +61,7 @@ void send_mqtt_message(const char *topic, char *payload)
     Serial.printf("MQTT Outgoing on %s: ", topic);
     Serial.println(payload);
 
-    bool result = mqtt_client.publish(topic, payload, false);
+    bool result = mqtt_client.publish(topic, payload, true);
 
     if (!result)
     {
@@ -263,8 +263,10 @@ bool decode_telegram(int len)
 
         if (validCRCFound)
             Serial.println(F("CRC Valid!"));
-        else
+        else {
             Serial.println(F("CRC Invalid!"));
+            Serial.printf("Got %#12x, calculated %#12x\n", strtol(messageCRC, NULL, 16), currentCRC);
+        }
 
         currentCRC = 0;
     }
@@ -427,7 +429,7 @@ void read_p1_hardwareserial()
         while (Serial.available())
         {
             ESP.wdtDisable();
-            int len = Serial.readBytesUntil('\n', telegram, P1_MAXLINELENGTH);
+            int len = Serial.readBytesUntil('\n', telegram, sizeof(telegram));
             ESP.wdtEnable(1);
 
             processLine(len);
@@ -588,6 +590,7 @@ void setup()
 
     // Setup a hw serial connection for communication with the P1 meter and logging (not using inversion)
     Serial.begin(BAUD_RATE, SERIAL_8N1, SERIAL_FULL);
+    Serial.setRxBufferSize(1024);
     Serial.println("");
     Serial.println("Swapping UART0 RX to inverted");
     Serial.flush();
